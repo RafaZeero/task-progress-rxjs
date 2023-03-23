@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { map, merge, Observable, scan } from 'rxjs';
+import { map, merge, Observable, scan, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -28,9 +28,11 @@ export class AppComponent {
 
   public loadVariation = merge(this.loadUp, this.loadDown);
   public currentLoadCount = this.loadVariation.pipe(
-    scan(
-      (totalCurrentLoads, changeInLoads) => totalCurrentLoads + changeInLoads,
-      this.startingValue
+    startWith(this.startingValue) /* First emits value 0 */,
+    scan((totalCurrentLoads, changeInLoads) =>
+      totalCurrentLoads + changeInLoads < 0
+        ? 0
+        : totalCurrentLoads + changeInLoads
     )
   );
 }
