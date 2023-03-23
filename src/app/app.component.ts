@@ -29,10 +29,11 @@ export class AppComponent {
   public loadVariation = merge(this.loadUp, this.loadDown);
   public currentLoadCount = this.loadVariation.pipe(
     startWith(this.startingValue) /* First emits value 0 */,
-    scan((totalCurrentLoads, changeInLoads) =>
-      totalCurrentLoads + changeInLoads < 0
-        ? 0
-        : totalCurrentLoads + changeInLoads
+    scan(
+      (totalCurrentLoads, changeInLoads) =>
+        totalCurrentLoads + changeInLoads < 0
+          ? 0 /* To avoid any negative value */
+          : totalCurrentLoads + changeInLoads /* Expected values */
     )
   );
 }
