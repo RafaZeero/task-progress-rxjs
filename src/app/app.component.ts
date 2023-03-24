@@ -10,6 +10,7 @@ import {
   shareReplay,
   startWith,
   Subject,
+  Subscription,
   switchMap,
   takeUntil,
   tap,
@@ -33,7 +34,15 @@ export class AppComponent implements OnInit {
   public startingValue = 0;
   public taskStarts = new Subject();
   public taskCompletions = new Subject();
-  public showSpinner = new Observable<boolean>();
+  public showSpinner = new Observable<boolean>(() => {
+    this.show = true;
+    console.log('show true');
+    return () => {
+      this.show = false;
+      console.log('show false');
+    };
+  });
+  public show = false;
 
   public loadUp = this.taskStarts.pipe(map(() => 1));
   public loadDown = this.taskCompletions.pipe(map(() => -1));
@@ -85,9 +94,7 @@ export class AppComponent implements OnInit {
     switchMap(() => this.showSpinner.pipe(takeUntil(this.shouldHideSpinner)))
   );
 
-  public ngOnInit() {
-    this.spinner.subscribe((x) => console.log(x));
-  }
+  public ngOnInit() {}
 
   public newTaskStarted(val: any) {
     this.taskStarts.next(val);
@@ -114,15 +121,17 @@ export class AppComponent implements OnInit {
 
   public doWork() {
     this.newTaskStarted(0);
+    const sub = this.showSpinner.subscribe();
     this.slowObservable$
       .pipe(finalize(() => this.existingTaskCompleted(0)))
-      .subscribe();
+      .subscribe(() => sub.unsubscribe());
   }
 
   public doLongWork() {
     this.newTaskStarted(0);
+    const sub = this.showSpinner.subscribe();
     this.verySlowObservable$
       .pipe(finalize(() => this.existingTaskCompleted(0)))
-      .subscribe();
+      .subscribe(() => sub.unsubscribe());
   }
 }
