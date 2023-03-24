@@ -1,5 +1,13 @@
 import { Component } from '@angular/core';
-import { map, merge, Observable, scan, startWith } from 'rxjs';
+import {
+  distinctUntilChanged,
+  map,
+  merge,
+  Observable,
+  scan,
+  shareReplay,
+  startWith,
+} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -27,13 +35,23 @@ export class AppComponent {
   // Events:
 
   public loadVariation = merge(this.loadUp, this.loadDown);
+
+  /* Single source of truth */
   public currentLoadCount = this.loadVariation.pipe(
     startWith(this.startingValue) /* First emits value 0 */,
     scan(
+      /* What type of state is scan holding? */
       (totalCurrentLoads, changeInLoads) =>
         totalCurrentLoads + changeInLoads < 0
           ? 0 /* To avoid any negative value */
           : totalCurrentLoads + changeInLoads /* Expected values */
-    )
+    ),
+    distinctUntilChanged(),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
+
+  /**
+   * Is scan transient? Emits different values for different subscribers
+   * Is scan single source of truth? Emits same values for different subscribers
+   */
 }
