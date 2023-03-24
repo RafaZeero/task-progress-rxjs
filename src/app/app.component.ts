@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   distinctUntilChanged,
+  finalize,
   map,
   merge,
   Observable,
@@ -8,6 +9,11 @@ import {
   scan,
   shareReplay,
   startWith,
+  Subject,
+  switchMap,
+  takeUntil,
+  tap,
+  timer,
 } from 'rxjs';
 
 @Component({
@@ -15,7 +21,7 @@ import {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   public title = 'task-progress-rxjs';
 
   /**
@@ -25,9 +31,9 @@ export class AppComponent {
    */
 
   public startingValue = 0;
-  public taskStarts = new Observable();
-  public taskCompletions = new Observable();
-  public showSpinner = new Observable();
+  public taskStarts = new Subject();
+  public taskCompletions = new Subject();
+  public showSpinner = new Observable<boolean>();
 
   public loadUp = this.taskStarts.pipe(map(() => 1));
   public loadDown = this.taskCompletions.pipe(map(() => -1));
@@ -57,6 +63,7 @@ export class AppComponent {
    */
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
+
   /* When does the loader hides? -> When does the async tasks goes to 0 */
   public shouldHideSpinner = this.currentLoadCount.pipe(
     map((count) => count === 0)
@@ -66,4 +73,56 @@ export class AppComponent {
     pairwise(),
     map(([prevCount, currCount]) => prevCount === 0 && currCount === 1)
   );
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
+
+  /**
+   * When spinners needs to show
+   * -> show the spinner until it's time to hide it
+   */
+
+  public spinner = this.shouldShowSpinner.pipe(
+    switchMap(() => this.showSpinner.pipe(takeUntil(this.shouldHideSpinner)))
+  );
+
+  public ngOnInit() {
+    this.spinner.subscribe((x) => console.log(x));
+  }
+
+  public newTaskStarted(val: any) {
+    this.taskStarts.next(val);
+  }
+
+  public existingTaskCompleted(val: any) {
+    this.taskCompletions.next(val);
+  }
+
+  public add() {
+    this.newTaskStarted(0);
+    // this.loadVariation.subscribe((x) => console.log('loadVariation', x));
+    // this.loadUp.subscribe((x) => console.log('loadUp', x));
+    // this.loadDown.subscribe((x) => console.log('loadDown', x));
+    this.currentLoadCount.subscribe((x) => console.log('currentLoadCount', x));
+  }
+  public decrease() {
+    this.existingTaskCompleted(0);
+  }
+
+  public slowObservable$ = timer(3000);
+  public verySlowObservable$ = timer(6000);
+  public tasksNum = 0;
+
+  public doWork() {
+    this.newTaskStarted(0);
+    this.slowObservable$
+      .pipe(finalize(() => this.existingTaskCompleted(0)))
+      .subscribe();
+  }
+
+  public doLongWork() {
+    this.newTaskStarted(0);
+    this.verySlowObservable$
+      .pipe(finalize(() => this.existingTaskCompleted(0)))
+      .subscribe();
+  }
 }
