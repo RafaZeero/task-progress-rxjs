@@ -4,6 +4,7 @@ import {
   map,
   merge,
   Observable,
+  pairwise,
   scan,
   shareReplay,
   startWith,
@@ -54,4 +55,15 @@ export class AppComponent {
    * Is scan transient? Emits different values for different subscribers
    * Is scan single source of truth? Emits same values for different subscribers
    */
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
+  /* When does the loader hides? -> When does the async tasks goes to 0 */
+  public shouldHideSpinner = this.currentLoadCount.pipe(
+    map((count) => count === 0)
+  );
+  /* When does the loader appears? -> When does the async tasks goes from 0 to 1 */
+  public shouldShowSpinner = this.currentLoadCount.pipe(
+    pairwise(),
+    map(([prevCount, currCount]) => prevCount === 0 && currCount === 1)
+  );
 }
