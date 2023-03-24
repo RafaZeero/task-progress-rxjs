@@ -8,4 +8,7 @@
 <p>Background Tasks: {{ currentLoadCount | async }}</p>
 <!-- <p>Background Tasks: {{ tasksNum }}</p> -->
 
-<p *ngIf="show">SPINNER!!</p>
+<p *ngIf="loadStats | async">
+  SPINNER ACTIVATED!! {{ percentage | percent }}
+  <span *ngIf="percentage === 1">Loading complete!</span>
+</p>

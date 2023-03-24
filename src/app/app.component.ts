@@ -32,16 +32,19 @@ export class AppComponent implements OnInit {
    */
 
   public startingValue = 0;
+  public percentage = 0;
   public taskStarts = new Subject();
   public taskCompletions = new Subject();
-  public showSpinner = new Observable<boolean>(() => {
-    this.show = true;
-    console.log('show true');
-    return () => {
-      this.show = false;
-      console.log('show false');
-    };
-  });
+  public showSpinner = (total: number, completed: number) =>
+    new Observable<boolean>(() => {
+      this.show = true;
+      this.percentage = completed / total;
+      console.log('total', total);
+      console.log('completed', completed);
+      return () => {
+        this.show = false;
+      };
+    });
   public show = false;
 
   public loadUp = this.taskStarts.pipe(map(() => 1));
@@ -74,13 +77,50 @@ export class AppComponent implements OnInit {
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
 
   /* When does the loader hides? -> When does the async tasks goes to 0 */
-  public shouldHideSpinner = this.currentLoadCount.pipe(
+  public spinnerDeactivated = this.currentLoadCount.pipe(
     map((count) => count === 0)
   );
   /* When does the loader appears? -> When does the async tasks goes from 0 to 1 */
-  public shouldShowSpinner = this.currentLoadCount.pipe(
+  public spinnerActivated = this.currentLoadCount.pipe(
     pairwise(),
     map(([prevCount, currCount]) => prevCount === 0 && currCount === 1)
+  );
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
+
+  public loadStats = this.currentLoadCount.pipe(
+    scan(
+      (loadStats, loadingUpdate) => {
+        const loadsWentDown: boolean =
+          loadingUpdate < loadStats.previousLoading;
+        const currentCompleted = loadsWentDown
+          ? loadStats.completed + 1
+          : loadStats.completed;
+
+        return {
+          total: currentCompleted + loadingUpdate,
+          completed: currentCompleted,
+          previousLoading: loadingUpdate,
+        };
+      },
+      { total: 0, completed: 0, previousLoading: 0 }
+    )
+  );
+
+  public spinnerWithStats = this.loadStats.pipe(
+    switchMap((stats) => this.showSpinner(stats.total, stats.completed))
+  );
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
+
+  /**
+   * Spinner active: switch to wait 2s before showing it
+   * cancel if inactive again in the meantime
+   */
+
+  public shouldShowSpinner = this.spinnerWithStats.pipe(
+    switchMap(() => timer(2000).pipe(takeUntil(this.spinnerDeactivated))),
+    tap(() => console.log('aaaaaaaaaaa'))
   );
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
@@ -90,8 +130,10 @@ export class AppComponent implements OnInit {
    * -> show the spinner until it's time to hide it
    */
 
-  public spinner = this.shouldShowSpinner.pipe(
-    switchMap(() => this.showSpinner.pipe(takeUntil(this.shouldHideSpinner)))
+  public spinner = this.spinnerActivated.pipe(
+    switchMap(() =>
+      this.showSpinner(0, 0).pipe(takeUntil(this.spinnerDeactivated))
+    )
   );
 
   public ngOnInit() {}
@@ -103,35 +145,31 @@ export class AppComponent implements OnInit {
   public existingTaskCompleted(val: any) {
     this.taskCompletions.next(val);
   }
-
-  public add() {
-    this.newTaskStarted(0);
-    // this.loadVariation.subscribe((x) => console.log('loadVariation', x));
-    // this.loadUp.subscribe((x) => console.log('loadUp', x));
-    // this.loadDown.subscribe((x) => console.log('loadDown', x));
-    this.currentLoadCount.subscribe((x) => console.log('currentLoadCount', x));
-  }
-  public decrease() {
-    this.existingTaskCompleted(0);
-  }
-
   public slowObservable$ = timer(3000);
   public verySlowObservable$ = timer(6000);
   public tasksNum = 0;
 
   public doWork() {
+    this.shouldShowSpinner.subscribe();
     this.newTaskStarted(0);
-    const sub = this.showSpinner.subscribe();
+    // const sub = this.showSpinner().subscribe();
     this.slowObservable$
       .pipe(finalize(() => this.existingTaskCompleted(0)))
-      .subscribe(() => sub.unsubscribe());
+      .subscribe
+      //
+      // () => sub.unsubscribe()
+      ();
   }
 
   public doLongWork() {
+    this.shouldShowSpinner.subscribe();
     this.newTaskStarted(0);
-    const sub = this.showSpinner.subscribe();
+    // const sub = this.showSpinner.subscribe();
     this.verySlowObservable$
       .pipe(finalize(() => this.existingTaskCompleted(0)))
-      .subscribe(() => sub.unsubscribe());
+      .subscribe
+      //
+      // () => sub.unsubscribe()
+      ();
   }
 }
