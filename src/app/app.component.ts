@@ -212,16 +212,14 @@ export class AppComponent implements OnInit {
     //     next: (x) => console.log('next:', x),
     //     complete: () => console.log('COMPLETED!!'),
     //   });
-
     // this.spinnerWithStats.subscribe();
     // this.shouldShowSpinner.subscribe();
-
-    interval(1000)
-      .pipe(take(2), this.showLoadingStatus())
-      .subscribe({
-        next: (x) => console.log('NEXT: ', x),
-        complete: () => console.log('COMPLETED'),
-      });
+    // interval(1000)
+    //   .pipe(take(2), this.showLoadingStatus())
+    //   .subscribe({
+    //     next: (x) => console.log('NEXT: ', x),
+    //     complete: () => console.log('COMPLETED'),
+    //   });
   }
 
   public newTaskStarted() {
@@ -231,8 +229,8 @@ export class AppComponent implements OnInit {
   public existingTaskCompleted() {
     this.taskCompletions.next(void 0);
   }
-  public slowObservable$ = timer(3000);
-  public verySlowObservable$ = timer(6000);
+  public slowObservable$ = timer(3000).pipe(this.showLoadingStatus());
+  public verySlowObservable$ = timer(6000).pipe(this.showLoadingStatus());
   public tasksNum = 0;
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
