@@ -2,6 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import {
   combineLatest,
   distinctUntilChanged,
+  exhaustMap,
   filter,
   finalize,
   fromEvent,
@@ -118,61 +119,6 @@ export class AppComponent implements OnInit {
   public spinnerWithStats = this.loadStats.pipe(
     switchMap((stats) => this.showSpinner(stats.total, stats.completed))
   );
-
-  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
-
-  /**
-   * Spinner active: switch to wait 2s before showing it
-   * cancel if inactive again in the meantime
-   */
-  public flashThreshold = timer(2000);
-
-  public shouldShowSpinner = this.spinnerWithStats.pipe(
-    switchMap(() =>
-      this.flashThreshold.pipe(takeUntil(this.spinnerDeactivated))
-    )
-  );
-
-  public shouldHideSpinner = combineLatest([
-    this.spinnerDeactivated,
-    this.flashThreshold,
-  ]);
-  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
-
-  /**
-   * When spinners needs to show
-   * -> show the spinner until it's time to hide it
-   */
-
-  public spinner = this.spinnerActivated.pipe(
-    switchMap(() =>
-      this.showSpinner(0, 0).pipe(takeUntil(this.spinnerDeactivated))
-    )
-  );
-
-  constructor() {}
-
-  public ngOnInit() {
-    this.newTaskStarted();
-    interval(1000)
-      .pipe(takeUntil(this.comboTriggered))
-      .subscribe({
-        next: (x) => console.log('next:', x),
-        complete: () => console.log('COMPLETED!!'),
-      });
-  }
-
-  public newTaskStarted() {
-    this.taskStarts.next(void 0);
-  }
-
-  public existingTaskCompleted() {
-    this.taskCompletions.next(void 0);
-  }
-  public slowObservable$ = timer(3000);
-  public verySlowObservable$ = timer(6000);
-  public tasksNum = 0;
-
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
 
   /**
@@ -195,13 +141,12 @@ export class AppComponent implements OnInit {
   public keyCombo(keyCombo: KeyboardEvent['key'][]) {
     const comboInitiator = keyCombo[0];
     return this.keyPressed(comboInitiator).pipe(
-      switchMap(() => {
+      // switchMap(() => {
+      exhaustMap(() => {
         // Now in combo mode!!
         return this.anyKeyPresses.pipe(
-          // takeUntil(timer(3000)),
-          takeWhile((keyPressed, index) => {
-            return keyCombo[index + 1] === keyPressed;
-          }),
+          takeUntil(timer(3000)),
+          takeWhile((keyPressed, index) => keyCombo[index + 1] === keyPressed),
           skip(keyCombo.length - 2),
           take(1)
         );
@@ -209,22 +154,113 @@ export class AppComponent implements OnInit {
     );
   }
 
-  public comboTriggered = this.keyCombo(['a', 's', 'd', 'f']);
-  // public comboTriggered = this.keyCombo(['a']);
+  public comboTriggered = this.keyCombo(['a', 's', 'a', 'f']);
+
+  public hideSpinnerCombo = this.keyCombo(['q', 'w', 'e', 'r', 't', 'y']);
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
+
+  /**
+   * Spinner active: switch to wait 2s before showing it
+   * cancel if inactive again in the meantime
+   */
+  public flashThreshold = timer(2000);
+
+  // public shouldShowSpinner = this.spinnerWithStats.pipe(
+  //   switchMap(() =>
+  //     this.flashThreshold.pipe(takeUntil(this.spinnerDeactivated))
+  //   )
+  // );
+
+  public shouldShowSpinner = this.spinnerActivated.pipe(
+    switchMap(() =>
+      this.flashThreshold.pipe(takeUntil(this.spinnerDeactivated))
+    ),
+    switchMap(() =>
+      this.spinnerWithStats.pipe(takeUntil(this.shouldHideSpinner))
+    ),
+    takeUntil(this.hideSpinnerCombo)
+  );
+
+  public shouldHideSpinner = combineLatest([
+    this.spinnerDeactivated,
+    this.flashThreshold,
+  ]);
+
+  public test!: any;
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
+
+  /**
+   * When spinners needs to show
+   * -> show the spinner until it's time to hide it
+   */
+
+  public spinner = this.spinnerActivated.pipe(
+    switchMap(() =>
+      this.showSpinner(0, 0).pipe(takeUntil(this.spinnerDeactivated))
+    )
+  );
+
+  constructor() {}
+
+  public ngOnInit() {
+    // this.newTaskStarted();
+    // interval(1000)
+    //   .pipe(takeUntil(this.comboTriggered))
+    //   .subscribe({
+    //     next: (x) => console.log('next:', x),
+    //     complete: () => console.log('COMPLETED!!'),
+    //   });
+
+    // this.spinnerWithStats.subscribe();
+    // this.shouldShowSpinner.subscribe();
+
+    interval(1000)
+      .pipe(take(2), this.showLoadingStatus())
+      .subscribe({
+        next: (x) => console.log('NEXT: ', x),
+        complete: () => console.log('COMPLETED'),
+      });
+  }
+
+  public newTaskStarted() {
+    this.taskStarts.next(void 0);
+  }
+
+  public existingTaskCompleted() {
+    this.taskCompletions.next(void 0);
+  }
+  public slowObservable$ = timer(3000);
+  public verySlowObservable$ = timer(6000);
+  public tasksNum = 0;
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
+
+  public showLoadingStatus() {
+    return (source: Observable<any>) => {
+      return new Observable((subscriber) => {
+        // I'VE BEEN SUBSCRIBED TO
+        this.newTaskStarted();
+        console.log('task start...');
+
+        const sourceSub = source.subscribe(subscriber);
+        return () => {
+          sourceSub.unsubscribe();
+          this.existingTaskCompleted();
+          console.log('task complete...');
+        };
+      });
+    };
+  }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
 
   public doWork() {
-    this.newTaskStarted();
-    this.slowObservable$
-      .pipe(finalize(() => this.existingTaskCompleted()))
-      .subscribe();
+    this.slowObservable$.subscribe();
   }
 
   public doLongWork() {
-    this.newTaskStarted();
-    this.verySlowObservable$
-      .pipe(finalize(() => this.existingTaskCompleted()))
-      .subscribe();
+    this.verySlowObservable$.subscribe();
   }
 }
