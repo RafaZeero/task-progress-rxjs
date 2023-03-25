@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import {
   combineLatest,
   distinctUntilChanged,
+  filter,
   finalize,
+  fromEvent,
+  interval,
   map,
   merge,
   Observable,
@@ -10,11 +13,14 @@ import {
   pairwise,
   scan,
   shareReplay,
+  skip,
   startWith,
   Subject,
   Subscription,
   switchMap,
+  take,
   takeUntil,
+  takeWhile,
   tap,
   timer,
 } from 'rxjs';
@@ -144,8 +150,16 @@ export class AppComponent implements OnInit {
     )
   );
 
+  constructor() {}
+
   public ngOnInit() {
     this.newTaskStarted();
+    interval(1000)
+      .pipe(takeUntil(this.comboTriggered))
+      .subscribe({
+        next: (x) => console.log('next:', x),
+        complete: () => console.log('COMPLETED!!'),
+      });
   }
 
   public newTaskStarted() {
@@ -158,6 +172,47 @@ export class AppComponent implements OnInit {
   public slowObservable$ = timer(3000);
   public verySlowObservable$ = timer(6000);
   public tasksNum = 0;
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
+
+  /**
+   * Whenever starts combo keys
+   *    -> Keep listening for the rest of the combo keys
+   *          -> Until the timer has run out
+   *          -> While the combo is being followed correctly
+   *          -> And until we've got (comboLenght - 1) keys back
+   */
+
+  public anyKeyPresses = fromEvent(document, 'keyup').pipe(
+    map((event: Event) => (event as KeyboardEvent).key),
+    tap(console.log)
+  );
+
+  public keyPressed(key: KeyboardEvent['key']) {
+    return this.anyKeyPresses.pipe(filter((pressedKey) => pressedKey === key));
+  }
+
+  public keyCombo(keyCombo: KeyboardEvent['key'][]) {
+    const comboInitiator = keyCombo[0];
+    return this.keyPressed(comboInitiator).pipe(
+      switchMap(() => {
+        // Now in combo mode!!
+        return this.anyKeyPresses.pipe(
+          // takeUntil(timer(3000)),
+          takeWhile((keyPressed, index) => {
+            return keyCombo[index + 1] === keyPressed;
+          }),
+          skip(keyCombo.length - 2),
+          take(1)
+        );
+      })
+    );
+  }
+
+  public comboTriggered = this.keyCombo(['a', 's', 'd', 'f']);
+  // public comboTriggered = this.keyCombo(['a']);
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
 
   public doWork() {
     this.newTaskStarted();
