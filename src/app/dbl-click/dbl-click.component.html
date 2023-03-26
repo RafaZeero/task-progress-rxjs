@@ -1,1 +1,8 @@
-<p>dbl-click works!</p>
+<!-- <button #button>Click Me #Button</button> -->
+<button #button (click)="initClickStream()">Click Me (click)</button>
+
+<p>
+  Result: <span>{{ label }}</span>
+</p>
+
+<p>Total Clicks: {{ clicks }}</p>
