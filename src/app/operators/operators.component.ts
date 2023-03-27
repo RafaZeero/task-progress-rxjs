@@ -46,7 +46,9 @@ export class OperatorsComponent {
   }
 
   public zipOperator() {
-    const zipOp = zip(this.foo$, this.bar$, (x, y) => x + y);
+    const hello$ = of('h', 'e', 'l', 'l', 'o');
+    // const zipOp = zip(this.foo$, this.bar$, (x, y) => x + y);
+    const zipOp = zip(this.hello$, this.bar$, (x, y) => x);
 
     zipOp.subscribe({
       next: (x) => console.log('next ' + x),
