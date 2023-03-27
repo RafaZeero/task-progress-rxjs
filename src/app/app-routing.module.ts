@@ -8,7 +8,11 @@ const routes: Routes = [
       (await import('./task-progress/task-progress.component'))
         .TaskProgressComponent,
   },
-
+  {
+    path: 'operators',
+    loadComponent: async () =>
+      (await import('./operators/operators.component')).OperatorsComponent,
+  },
   {
     path: 'dbl-click',
     loadComponent: async () =>
