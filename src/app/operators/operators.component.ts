@@ -10,6 +10,7 @@ import {
   Subject,
   take,
   withLatestFrom,
+  zip,
   zipWith,
 } from 'rxjs';
 
@@ -40,7 +41,18 @@ export class OperatorsComponent {
   public ngOnInit() {
     // this.mergeOperator();
     // this.combineLatestOperator();
-    this.withLatestFromOperator();
+    // this.withLatestFromOperator();
+    this.zipOperator();
+  }
+
+  public zipOperator() {
+    const zipOp = zip(this.foo$, this.bar$, (x, y) => x + y);
+
+    zipOp.subscribe({
+      next: (x) => console.log('next ' + x),
+      error: (err) => console.log('error ' + err),
+      complete: () => console.log('done'),
+    });
   }
 
   public withLatestFromOperator() {
