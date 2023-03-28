@@ -39,9 +39,9 @@ export class OperatorsComponent {
   );
 
   public ngOnInit() {
-    // this.mergeOperator();
-    // this.combineLatestOperator();
-    // this.withLatestFromOperator();
+    this.mergeOperator();
+    this.combineLatestOperator();
+    this.withLatestFromOperator();
     this.zipOperator();
   }
 
