@@ -97,9 +97,16 @@ export class TaskProgressComponent {
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
 
-  public loadStats = this.currentLoadCount.pipe(
+  public reset$ = fromEvent(document, 'keypress').pipe(
+    map(value => 'reset'),
+  )
+
+  public loadStats = merge(this.currentLoadCount, this.reset$).pipe(
     scan(
-      (loadStats, loadingUpdate) => {
+      (loadStats: any, loadingUpdate: any) => {
+        if(loadingUpdate === 'reset'){
+          return  { total: 0, completed: 0, previousLoading: 0 }
+        }
         const loadsWentDown: boolean =
           loadingUpdate < loadStats.previousLoading;
         const currentCompleted: number = loadsWentDown
