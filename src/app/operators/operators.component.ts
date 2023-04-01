@@ -41,6 +41,7 @@ export class OperatorsComponent {
   );
 
   public operator$!: Observable<any>;
+  public operatorName$!: Observable<any>;
 
   public ngOnInit() {
     // this.mergeOperator();
@@ -101,6 +102,8 @@ export class OperatorsComponent {
     const bufferOp = this.hello$.pipe(bufferCount(2));
 
     this.operator$ = bufferOp;
+
+    this.operatorName$ = of('bufferCount');
 
     bufferOp.subscribe({
       next: (x) => console.log('next ' + x),
