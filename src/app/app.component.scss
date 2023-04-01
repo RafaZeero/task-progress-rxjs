@@ -25,7 +25,6 @@ p {
 
 ul {
   display: flex;
-  flex-direction: column;
   gap: 2px;
 }
 
@@ -38,6 +37,7 @@ li {
   border-bottom-right-radius: 4px;
   width: 250px;
   color: black;
+  list-style: none;
 
   &:hover {
     background-color: lavender;

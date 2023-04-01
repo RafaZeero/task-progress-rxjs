@@ -18,6 +18,11 @@ const routes: Routes = [
     loadComponent: async () =>
       (await import('./dbl-click/dbl-click.component')).DblClickComponent,
   },
+  {
+    path: 'hoc-maps',
+    loadComponent: async () =>
+      (await import('./hoc-maps/hoc-maps.component')).HocMapsComponent,
+  },
 ];
 
 @NgModule({
