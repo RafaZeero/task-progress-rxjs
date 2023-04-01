@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
+  buffer,
+  bufferCount,
   combineLatest,
   interval,
   map,
@@ -38,11 +40,14 @@ export class OperatorsComponent {
     map(([_, x]) => x)
   );
 
+  public operator$!: Observable<any>;
+
   public ngOnInit() {
-    this.mergeOperator();
-    this.combineLatestOperator();
-    this.withLatestFromOperator();
-    this.zipOperator();
+    // this.mergeOperator();
+    // this.combineLatestOperator();
+    // this.withLatestFromOperator();
+    // this.zipOperator();
+    this.bufferOperators();
   }
 
   public zipOperator() {
@@ -86,6 +91,18 @@ export class OperatorsComponent {
       .pipe(map(([x, y]) => x + y));
 
     latest.subscribe({
+      next: (x) => console.log('next ' + x),
+      error: (err) => console.log('error ' + err),
+      complete: () => console.log('done'),
+    });
+  }
+
+  public bufferOperators() {
+    const bufferOp = this.hello$.pipe(bufferCount(2));
+
+    this.operator$ = bufferOp;
+
+    bufferOp.subscribe({
       next: (x) => console.log('next ' + x),
       error: (err) => console.log('error ' + err),
       complete: () => console.log('done'),
