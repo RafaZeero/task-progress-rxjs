@@ -1,1 +1,18 @@
-<p>hoc-maps works!</p>
+<div class="concat">
+  <h1>Concat Map</h1>
+  <p>Like a Relay. Waits for previous operation to complete, then repeats</p>
+  <p>Value: {{ concat$ | async }}</p>
+</div>
+<div class="merge">
+  <h1>Merge Map</h1>
+  <p>
+    Like a 100m race. No matter the order, no matter who emits first, only the
+    last will show up
+  </p>
+  <p>Value: {{ merge$ | async }}</p>
+</div>
+<div class="switch">
+  <h1>Switch Map</h1>
+  <p>Stops and takes only the next value emitted</p>
+  <!-- <p>Value: {{ concat$ | async }}</p> -->
+</div>
