@@ -21,6 +21,8 @@ import {
   skip,
   take,
   combineLatest,
+  interval,
+  finalize,
 } from 'rxjs';
 
 @Component({
@@ -40,8 +42,8 @@ export class TaskProgressComponent {
 
   public startingValue = 0;
   public percentage = 0;
-  public taskStarts = new Subject();
-  public taskCompletions = new Subject();
+  public taskStarts = new Subject<void>();
+  public taskCompletions = new Subject<void>();
   public showSpinner = (total: number, completed: number) =>
     new Observable<boolean>(() => {
       this.show = true;
@@ -185,8 +187,6 @@ export class TaskProgressComponent {
     this.flashThreshold,
   ]);
 
-  public test!: any;
-
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx //
 
   /**
@@ -210,7 +210,7 @@ export class TaskProgressComponent {
     //     next: (x) => console.log('next:', x),
     //     complete: () => console.log('COMPLETED!!'),
     //   });
-    // this.spinnerWithStats.subscribe();
+    this.spinnerWithStats.subscribe();
     // this.shouldShowSpinner.subscribe();
     // interval(1000)
     //   .pipe(take(2), this.showLoadingStatus())
@@ -221,11 +221,11 @@ export class TaskProgressComponent {
   }
 
   public newTaskStarted() {
-    this.taskStarts.next(void 0);
+    this.taskStarts.next();
   }
 
   public existingTaskCompleted() {
-    this.taskCompletions.next(void 0);
+    this.taskCompletions.next();
   }
   public slowObservable$ = timer(3000).pipe(this.showLoadingStatus());
   public verySlowObservable$ = timer(6000).pipe(this.showLoadingStatus());
