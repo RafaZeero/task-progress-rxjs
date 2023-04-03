@@ -12,8 +12,16 @@
     last will show up
   </p>
   <p>
-    Value: <span class="value"> {{ merge$ | async }} </span>
+    <!-- Value: <span class="value"> {{ merge$ | async }} </span> -->
   </p>
+
+  <div *ngIf="merge$ | async as data">
+    <div *ngFor="let name of data.names">
+      <h2>{{ name }}</h2>
+      <p>Has Skills: {{ data.hasSkills[0][name] }}</p>
+      <p>Evolved: {{ data.evolved[0][name] }}</p>
+    </div>
+  </div>
 </div>
 <div class="switch map">
   <h1>Switch Map</h1>
