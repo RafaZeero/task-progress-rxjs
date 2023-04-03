@@ -1,0 +1,22 @@
+.map {
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  background-color: ghostwhite;
+  border: 1px solid skyblue;
+  border-left: 2px solid green;
+  row-gap: 8px;
+  padding: 32px 40px;
+  justify-content: center;
+  margin-inline: auto;
+
+  font-size: 1.25rem;
+
+  &:not(:last-of-type) {
+    margin-bottom: 32px;
+  }
+
+  .value {
+    color: mediumblue;
+  }
+}
