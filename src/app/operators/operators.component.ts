@@ -5,6 +5,8 @@ import {
   bufferCount,
   bufferTime,
   combineLatest,
+  delay,
+  delayWhen,
   interval,
   map,
   merge,
@@ -49,7 +51,8 @@ export class OperatorsComponent {
     // this.combineLatestOperator();
     // this.withLatestFromOperator();
     // this.zipOperator();
-    this.bufferOperators();
+    // this.bufferOperators();
+    this.delayOperator();
   }
 
   public zipOperator() {
@@ -110,6 +113,22 @@ export class OperatorsComponent {
     this.operatorName$ = of('bufferCount');
 
     bufferOp.subscribe({
+      next: (x) => console.log('next ' + x),
+      error: (err) => console.log('error ' + err),
+      complete: () => console.log('done'),
+    });
+  }
+
+  public delayOperator() {
+    // const delayOp = this.foo$.pipe(delay(1000));
+    // const delayOp = this.foo$.pipe(delay(new Date().getSeconds() + 1000));
+    const delayOp = this.foo$.pipe(
+      delayWhen((x) => interval(x * x * 1000).pipe(take(1)))
+    );
+
+    this.operator$ = delayOp;
+
+    delayOp.subscribe({
       next: (x) => console.log('next ' + x),
       error: (err) => console.log('error ' + err),
       complete: () => console.log('done'),
