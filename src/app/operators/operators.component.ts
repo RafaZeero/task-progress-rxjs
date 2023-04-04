@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import {
   buffer,
   bufferCount,
+  bufferTime,
   combineLatest,
   interval,
   map,
@@ -28,7 +29,7 @@ export class OperatorsComponent {
   public readonly foo$ = interval(500).pipe(take(4));
   public readonly bar$ = interval(300).pipe(take(5));
 
-  public readonly hello$ = interval(500).pipe(
+  public readonly hello$ = interval(600).pipe(
     take(5),
     zipWith(of('H', 'e', 'l', 'l', 'o')),
     map(([_, x]) => x)
@@ -99,7 +100,10 @@ export class OperatorsComponent {
   }
 
   public bufferOperators() {
-    const bufferOp = this.hello$.pipe(bufferCount(2));
+    // const bufferOp = this.hello$.pipe(bufferCount(2));
+    // const bufferOp = this.hello$.pipe(bufferTime(1000));
+    const inner$ = interval(900).pipe(take(3));
+    const bufferOp = this.hello$.pipe(buffer(inner$));
 
     this.operator$ = bufferOp;
 

@@ -87,11 +87,6 @@ export class HocMapsComponent {
       }))
     );
 
-    // const mergeMapOp = this.dataOne$.pipe(
-    //   mergeMap(() => this.dataTwo$),
-    //   pairwise(),
-    // );
-
     this.merge$ = mergeMapOp;
 
     mergeMapOp.subscribe({
