@@ -10,6 +10,7 @@ import {
   delay,
   delayWhen,
   distinct,
+  distinctUntilChanged,
   interval,
   map,
   merge,
@@ -38,6 +39,14 @@ export class OperatorsComponent {
     take(5),
     zipWith(of('H', 'e', 'l', 'l', 'o')),
     map(([_, x]) => x)
+  );
+
+  public readonly vogals$: Observable<any> = zip(
+    interval(500),
+    of('a', 'b', 'a', 'a', 'b').pipe(
+      map(([x, y]) => y),
+      take(5)
+    )
   );
 
   public readonly numbers$ = interval(300).pipe(
@@ -177,7 +186,8 @@ export class OperatorsComponent {
   }
 
   public distinctOperator() {
-    const distinctOp = this.hello$.pipe(distinct());
+    // const distinctOp = this.hello$.pipe(distinct());
+    const distinctOp = this.vogals$.pipe(distinct());
 
     this.operator$ = distinctOp;
 
