@@ -9,6 +9,7 @@ import {
   debounceTime,
   delay,
   delayWhen,
+  distinct,
   interval,
   map,
   merge,
@@ -55,7 +56,8 @@ export class OperatorsComponent {
     // this.zipOperator();
     // this.bufferOperators();
     // this.delayOperator();
-    this.debounceOperator();
+    // this.debounceOperator();
+    this.distinctOperator();
   }
 
   public zipOperator() {
@@ -168,6 +170,20 @@ export class OperatorsComponent {
     this.operatorName$ = of('debounce');
 
     debounceOp.subscribe({
+      next: (x) => console.log('next ' + x),
+      error: (err) => console.log('error ' + err),
+      complete: () => console.log('done'),
+    });
+  }
+
+  public distinctOperator() {
+    const distinctOp = this.hello$.pipe(distinct());
+
+    this.operator$ = distinctOp;
+
+    this.operatorName$ = of('distinct');
+
+    distinctOp.subscribe({
       next: (x) => console.log('next ' + x),
       error: (err) => console.log('error ' + err),
       complete: () => console.log('done'),
