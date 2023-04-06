@@ -155,8 +155,12 @@ export class OperatorsComponent {
     );
 
     /**
-     * debounceTime ====== delay
+     * debounceTime ====== ThrottleTime
+     * debounce ========== Throttle
      * debounce ========== delayWhen
+     *
+     * debounceTime: waits for silence, then emits
+     * throttleTime: first emits, then cause silence
      */
 
     this.operator$ = debounceOp;
