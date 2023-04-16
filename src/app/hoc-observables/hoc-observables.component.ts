@@ -14,6 +14,7 @@ import {
   count,
   switchMap,
   windowToggle,
+  groupBy,
 } from 'rxjs';
 
 @Component({
@@ -27,7 +28,8 @@ import {
 export class HocObservablesComponent implements OnInit {
   public ngOnInit(): void {
     // this.clock$.subscribe(this.subFn());
-    this.result$.subscribe(this.subFn());
+    // this.result$.subscribe(this.subFn());
+    this.num2$.subscribe(this.subFn());
   }
 
   public subFn = () => ({
@@ -58,6 +60,17 @@ export class HocObservablesComponent implements OnInit {
     switchMap((obs) => obs.pipe(count()))
     /* Show Count for every number when holding mouse down */
     // switchAll()
+  );
+
+  public num2$ = interval(500).pipe(
+    take(5),
+    /* Split into 2 observables, even & odds */
+    groupBy((x) => x % 2),
+    /* Count how many values they have in each observable */
+    mergeMap((inner$) => inner$.pipe(count()))
+    /* Get final value for both observables concurrently*/
+    // map((inner$) => inner$.pipe(count()))
+    // mergeAll()
   );
 
   /**
