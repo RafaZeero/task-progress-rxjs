@@ -15,6 +15,11 @@ import {
   switchMap,
   windowToggle,
   groupBy,
+  concatMap,
+  delay,
+  merge,
+  filter,
+  skip,
 } from 'rxjs';
 
 @Component({
@@ -29,12 +34,13 @@ export class HocObservablesComponent implements OnInit {
   public ngOnInit(): void {
     // this.clock$.subscribe(this.subFn());
     // this.result$.subscribe(this.subFn());
-    this.num2$.subscribe(this.subFn());
+    // this.num2$.subscribe(this.subFn());
+    this.all$.subscribe(this.subFn());
   }
 
   public subFn = () => ({
-    next: (x: any) => console.log('next ' + x),
-    error: (err: any) => console.log('error ' + err),
+    next: (x: any) => console.log(x),
+    error: (err: any) => console.log('error: ' + err),
     complete: () => console.log('done'),
   });
 
@@ -71,6 +77,57 @@ export class HocObservablesComponent implements OnInit {
     /* Get final value for both observables concurrently*/
     // map((inner$) => inner$.pipe(count()))
     // mergeAll()
+  );
+
+  public langs$ = of(
+    { code: 'en-us', value: '-TEST-' },
+    { code: 'en-us', value: 'hello' },
+    { code: 'es', value: '-TEST-' },
+    { code: 'en-us', value: 'amazing' },
+    { code: 'pt-br', value: '-TEST-' },
+    { code: 'pt-br', value: 'olá' },
+    { code: 'es', value: 'hola' },
+    { code: 'es', value: 'mundo' },
+    { code: 'en-us', value: 'world' },
+    { code: 'pt-br', value: 'mundo' },
+    { code: 'es', value: 'asombroso' },
+    { code: 'pt-br', value: 'maravilhoso' }
+  ).pipe(
+    concatMap((x) => of(x)),
+    delay(500)
+  );
+
+  // * DO NOT MAKE THIS
+  public enUS = this.langs$.pipe(
+    filter((obj) => obj.code === 'en-us'),
+    skip(1),
+    map((obj) => obj.value)
+  );
+
+  public es = this.langs$.pipe(
+    filter((obj) => obj.code === 'en-us'),
+    skip(1),
+    map((obj) => obj.value)
+  );
+
+  public ptBR = this.langs$.pipe(
+    filter((obj) => obj.code === 'en-us'),
+    skip(1),
+    map((obj) => obj.value)
+  );
+  public all2$ = merge(this.enUS, this.es, this.ptBR);
+  // * ********************* *
+
+  // * DO THIS INSTEAD!!
+
+  public all$ = this.langs$.pipe(
+    groupBy((obj) => obj.code),
+    mergeMap((inner$) =>
+      inner$.pipe(
+        skip(1),
+        map((obj) => obj.value)
+      )
+    )
   );
 
   /**
