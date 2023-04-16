@@ -13,6 +13,7 @@ import {
   window,
   count,
   switchMap,
+  windowToggle,
 } from 'rxjs';
 
 @Component({
@@ -42,6 +43,8 @@ export class HocObservablesComponent implements OnInit {
 
   public click$ = fromEvent(document, 'click');
   public clock$ = interval(1000);
+  public mouseUp$ = fromEvent(document, 'mouseup');
+  public mouseDown$ = fromEvent(document, 'mousedown');
 
   // * The same as the code below
   // public result$ = this.clock$.pipe(
@@ -50,8 +53,11 @@ export class HocObservablesComponent implements OnInit {
   //   switchAll()
   // );
   public result$ = this.clock$.pipe(
-    window(this.click$),
+    windowToggle(this.mouseDown$, () => this.mouseUp$),
+    /* Count only for how long will hold mouse down */
     switchMap((obs) => obs.pipe(count()))
+    /* Show Count for every number when holding mouse down */
+    // switchAll()
   );
 
   /**
