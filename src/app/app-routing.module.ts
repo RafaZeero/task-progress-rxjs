@@ -23,6 +23,12 @@ const routes: Routes = [
     loadComponent: async () =>
       (await import('./hoc-maps/hoc-maps.component')).HocMapsComponent,
   },
+  {
+    path: 'hoc-observables',
+    loadComponent: async () =>
+      (await import('./hoc-observables/hoc-observables.component'))
+        .HocObservablesComponent,
+  },
 ];
 
 @NgModule({
