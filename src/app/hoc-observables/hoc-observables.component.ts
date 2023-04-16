@@ -9,6 +9,10 @@ import {
   switchAll,
   mergeAll,
   concatAll,
+  mergeMap,
+  window,
+  count,
+  switchMap,
 } from 'rxjs';
 
 @Component({
@@ -21,7 +25,8 @@ import {
 })
 export class HocObservablesComponent implements OnInit {
   public ngOnInit(): void {
-    this.clock$.subscribe(this.subFn());
+    // this.clock$.subscribe(this.subFn());
+    this.result$.subscribe(this.subFn());
   }
 
   public subFn = () => ({
@@ -36,12 +41,22 @@ export class HocObservablesComponent implements OnInit {
   // higherOrderObservable.subscribe(subFn);
 
   public click$ = fromEvent(document, 'click');
-  public clock$ = this.click$.pipe(
-    map(() => interval(1000)),
-    // switchAll()
-    // mergeAll(),
-    concatAll()
+  public clock$ = interval(1000);
+
+  // * The same as the code below
+  // public result$ = this.clock$.pipe(
+  //   window(this.click$),
+  //   map((obs) => obs.pipe(count())),
+  //   switchAll()
+  // );
+  public result$ = this.clock$.pipe(
+    window(this.click$),
+    switchMap((obs) => obs.pipe(count()))
   );
 
-  /** Not very practical. Must refactor */
+  /**
+   * switchMap() = map() + switchAll()
+   * mergeMap() = map() + mergeAll()
+   * concatMap() = map() + concatAll()
+   */
 }
