@@ -1,6 +1,15 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { interval, take, map, of, fromEvent, switchAll } from 'rxjs';
+import {
+  interval,
+  take,
+  map,
+  of,
+  fromEvent,
+  switchAll,
+  mergeAll,
+  concatAll,
+} from 'rxjs';
 
 @Component({
   selector: 'app-hoc-observables',
@@ -29,7 +38,9 @@ export class HocObservablesComponent implements OnInit {
   public click$ = fromEvent(document, 'click');
   public clock$ = this.click$.pipe(
     map(() => interval(1000)),
-    switchAll()
+    // switchAll()
+    // mergeAll(),
+    concatAll()
   );
 
   /** Not very practical. Must refactor */
