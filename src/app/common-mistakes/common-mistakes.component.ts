@@ -8,10 +8,13 @@ import { CommonModule } from '@angular/common';
 import {
   Observable,
   Subject,
+  fromEvent,
   interval,
+  map,
   merge,
   switchMap,
   takeUntil,
+  timer,
 } from 'rxjs';
 import { SubscribeService } from '../services';
 
@@ -28,22 +31,15 @@ export class CommonMistakesComponent implements OnInit {
 
   // public click = new Subject<MouseEvent>();
 
-  public click$ = new Observable((observer) => {
-    const listener = (e: MouseEvent) => observer.next(e.clientX);
-    document.addEventListener('click', listener);
-
-    return () => document.removeEventListener('click', listener);
-  });
-
+  public click$ = fromEvent(document, 'click').pipe(
+    map((v) => (v as MouseEvent).clientX)
+  );
   public count$ = interval(1000);
+  public four$ = timer(4000);
 
   public ngOnInit(): void {
-    const sub = merge(this.click$, this.count$).subscribe(
-      this.subscriptionService.subFn('For each click')
-    );
-
-    setTimeout(() => {
-      sub.unsubscribe();
-    }, 4000);
+    merge(this.click$, this.count$)
+      .pipe(takeUntil(this.four$))
+      .subscribe(this.subscriptionService.subFn('For each click'));
   }
 }
