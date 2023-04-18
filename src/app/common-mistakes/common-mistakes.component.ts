@@ -46,15 +46,21 @@ export class CommonMistakesComponent implements OnInit {
     //   .pipe(take(20))
     //   .subscribe(this.subscriptionService.subFn());
 
-    this.volume$.subscribe(this.subscriptionService.subFn('Non zip'));
-    this.volumeZip$.subscribe(this.subscriptionService.subFn('Zip'));
+    // this.volume$.subscribe(this.subscriptionService.subFn('Non zip'));
+    // this.volumeZip$.subscribe(this.subscriptionService.subFn('Zip'));
+
+    this.click$.subscribe((ev) =>
+      this.updateDot((ev as MouseEvent).clientX, (ev as MouseEvent).clientY)
+    );
+
+    this.clickAndFetch$.subscribe(this.subscriptionService.subFn());
   }
 
   // public xCoordFromClick$ = fromEvent(document, 'click').pipe(
   //   map((v) => (v as MouseEvent).clientX)
   // );
 
-  // public click$ = fromEvent(document, 'click');
+  public click$ = fromEvent(document, 'click');
   // public count$ = interval(1000);
   // public four$ = timer(4000);
 
@@ -62,11 +68,11 @@ export class CommonMistakesComponent implements OnInit {
   // 2. Convert to Observables
   // 3. Compose
 
-  // public res$ = from(
-  //   fetch('https://jsonplaceholder.typicode.com/users/1').then((res) =>
-  //     res.json()
-  //   )
-  // );
+  public res$ = from(
+    fetch('https://jsonplaceholder.typicode.com/users/1').then((res) =>
+      res.json()
+    )
+  );
 
   // public count$ = merge(this.click$, this.res$).pipe(
   //   map(() => 1),
@@ -75,17 +81,24 @@ export class CommonMistakesComponent implements OnInit {
 
   // public tickWhenClick$ = this.click$.pipe(switchMap(() => interval(500)));
 
-  public length$ = of(5);
-  public width$ = of(7);
-  public height$ = of(2.5, 7.3);
+  // public length$ = of(5);
+  // public width$ = of(7);
+  // public height$ = of(2.5, 7.3);
 
-  public volume$ = combineLatest([
-    this.length$,
-    this.width$,
-    this.height$,
-  ]).pipe(map(([l, w, h]) => l * w * h));
+  // public volume$ = combineLatest([
+  //   this.length$,
+  //   this.width$,
+  //   this.height$,
+  // ]).pipe(map(([l, w, h]) => l * w * h));
 
-  public volumeZip$ = zip([this.length$, this.width$, this.height$]).pipe(
-    map(([l, w, h]) => l * w * h)
-  );
+  // public volumeZip$ = zip([this.length$, this.width$, this.height$]).pipe(
+  //   map(([l, w, h]) => l * w * h)
+  // );
+
+  public clickAndFetch$ = this.click$.pipe(switchMap(() => this.res$));
+
+  public updateDot = (x: number, y: number) => {
+    (document.querySelector('.dot') as HTMLDivElement).style.left = `${x}px`;
+    (document.querySelector('.dot') as HTMLDivElement).style.top = `${y}px`;
+  };
 }
