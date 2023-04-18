@@ -29,6 +29,12 @@ const routes: Routes = [
       (await import('./hoc-observables/hoc-observables.component'))
         .HocObservablesComponent,
   },
+  {
+    path: 'common-mistakes',
+    loadComponent: async () =>
+      (await import('./common-mistakes/common-mistakes.component'))
+        .CommonMistakesComponent,
+  },
 ];
 
 @NgModule({
